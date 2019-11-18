@@ -1,5 +1,9 @@
 https://docs.google.com/document/d/14xMQngn-k4XxipDqQvu5qP3THAvjsTDkjJKQTmLXCLI/edit
 
+<<<<<<< HEAD
 ok modif
 
 yes !!!
+=======
+ok modifca
+>>>>>>> 055e687995e42e2140f941a3a4bf5354320fe91a
