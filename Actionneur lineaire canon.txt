@@ -1,3 +1,5 @@
 https://12vactuators.com/blog/how-to-control-linear-actuator-with-arduino/
 
 https://electronicsforu.com/electronics-projects/controlling-linear-actuator-arduino
+
+branchement avec relais: https://www.youtube.com/watch?v=ldjiohQcy4c
