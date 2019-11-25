@@ -1,1 +1,3 @@
 https://12vactuators.com/blog/how-to-control-linear-actuator-with-arduino/
+
+https://electronicsforu.com/electronics-projects/controlling-linear-actuator-arduino
