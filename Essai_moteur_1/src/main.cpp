@@ -30,10 +30,12 @@ void loop() {
   
   // Serial.print("tick");
 
+int i=0;
+/*
   if (Serial.available() > 0) {
     int content = Serial.read();
 
-    uint8_t mov = 150;
+   uint8_t mov = 0;
     if (content == 'z') {
       Serial.print("Forward");
       myMotor->run(FORWARD);
@@ -48,37 +50,35 @@ void loop() {
       if (mov < 0) {
         mov = 0;
       }
-    }
+    }*/
 
-    myMotor->setSpeed(mov);
-     myMotor->run(RELEASE);
-    delay(10);
-  }
 
-  // myMotor->run(FORWARD);
-  // for (i=0; i<255; i++) {
-  //   myMotor->setSpeed(i);  
-  //   delay(10);
-  // }
-  // for (i=255; i!=0; i--) {
-  //   myMotor->setSpeed(i);  
-  //   delay(10);
-  // }
   
-  // Serial.print("tock");
 
-  // myMotor->run(BACKWARD);
-  // for (i=0; i<255; i++) {
-  //   myMotor->setSpeed(i);  
-  //   delay(10);
-  // }
-  // for (i=255; i!=0; i--) {
-  //   myMotor->setSpeed(i);  
-  //   delay(10);
-  // }
+   myMotor->run(FORWARD);
+   for (i=0; i<255; i++) {
+     myMotor->setSpeed(i);  
+     delay(20);
+   }
+   for (i=255; i!=0; i--) {
+     myMotor->setSpeed(i);  
+     delay(20);
+   }
+  
+   Serial.print("tock");
 
-  // Serial.print("tech");
-  // myMotor->run(RELEASE);
-  // delay(1000);
+   myMotor->run(BACKWARD);
+   for (i=0; i<255; i++) {
+     myMotor->setSpeed(i);  
+     delay(20);
+   }
+   for (i=255; i!=0; i--) {
+     myMotor->setSpeed(i);  
+     delay(20);
+   }
+
+   Serial.print("tech");
+   myMotor->run(RELEASE);
+   delay(1000);
   
 }
