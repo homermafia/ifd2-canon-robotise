@@ -39,7 +39,7 @@ int i=0;
      delay(20); // a voir si modifier
    }
 
-   delay(3000); // modifier pour le temps de sortie du canon
+   delay(7000); // modifier pour le temps de sortie du canon
 
    for (i=255; i>=0; i--) {
      Motor1->setSpeed(i);  
@@ -48,45 +48,55 @@ int i=0;
    Motor1->setSpeed(0);
 // lancer sequence : lever canon
 
-Motor2->run(BACKWARD);
-Motor2 ->setSpeed(150);       //monter
-delay(1000);
+Motor2->run(FORWARD);
+Motor2 ->setSpeed(255);       //monter
+delay(16000);
 
 Motor2->setSpeed(0);          //attendre
-delay(300);
+delay(2000);
 
-Motor2->run(FORWARD);         //descendre
-Motor2 ->setSpeed(150);
-delay(1500);
+Motor2->run(BACKWARD);         //descendre
+Motor2 ->setSpeed(200);
+delay(4000);
 
 Motor2->setSpeed(0);          //attendre
-delay(300);
+delay(2000);
 
-Motor2->run(BACKWARD);        //monter
-Motor2 ->setSpeed(150);
-delay(1000);
+Motor2->run(FORWARD);        //monter
+Motor2 ->setSpeed(200);
+delay(8000);
 
 Motor2->setSpeed(0);
-delay(1000);
+delay(2000);
 
 // jouer son de tir
 
 
-
-
-Motor1->run(BACKWARD);          // sequence de recul
+Motor1->run(BACKWARD);          // sequence de recul car tir
    for (i=255; i>=0; i=i-3) {
      Motor1->setSpeed(i);  
-     delay(5);
-   }  
-   delay(10000);
-  Motor1->setSpeed(0);
+     delay(20);
+   }
+   Motor1->setSpeed(0);
+   delay(5000);
 
-  Motor2->run(BACKWARD);          // sequence de recul
-   for (i=255; i>=0; i=i-3) {
-     Motor1->setSpeed(i);  
-     delay(5);
-   }  
-   delay(10000);
+  // jouer son explosion
+
+  delay(5000);
+  Motor2->run(BACKWARD);          // Remise à l'horizontale
+   Motor2->setSpeed(255);
+   delay(16000);                  // Trouver le temps pour mettre a l'horizontal
   Motor2->setSpeed(0);
+
+  Motor1->run(BACKWARD);          // rentrer canon
+   for (i=0; i<=255; i++) {
+     Motor1->setSpeed(i);  
+     delay(20);                   // a voir si modifier
+   }
+   delay(15000);
+    Motor1->setSpeed(0);
+
+    // Vérifier coordonnées et jouer le son correspondant
+
+    delay(20000);
 }
