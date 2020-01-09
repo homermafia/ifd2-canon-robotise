@@ -5,11 +5,11 @@
 MQTTClient client;
 WiFiClient wificlient;
 
- //char ssid[] = "Crunch LAB";
- //char pass[] = "90xV@FsT";
- char ssid[] = "utbm_visiteurs";
- char pass[] = "";
- const char hostname[14] = "172.17.14.254";//MQTT Broker IP
+ char ssid[] = "Crunch LAB";
+ char pass[] = "90xV@FsT";
+ //char ssid[] = "utbm_visiteurs";
+ //char pass[] = "";
+ const char hostname[14] = "192.168.1.15";//MQTT Broker IP
 
 unsigned long lastMillis = 0;
 
@@ -22,7 +22,7 @@ void connect() {
   }
 
   Serial.println("connecting...");
-  while (!client.connect("arduino", "try", "try")) {
+  while (!client.connect("toto", "try", "try")) {
     Serial.print("+");
     delay(1000);
   }
@@ -31,17 +31,9 @@ void connect() {
 
 }
 
-//void messageReceived(String &topic, String &payload) {
-//  Serial.println("incoming: " + topic + " - " + payload);
-//}
-
 int button = 4;
 int compteur = 0;
 char etat_z[10]="";
-
-// brancher NC (bleu) sur port A5
-// NO (jaune) sur port A4
-// C (rouge) sur port 3V
 
 void setup()
 {
@@ -55,37 +47,42 @@ void setup()
   pinMode(button, INPUT);
   sprintf(etat_z, "%d", 0);
 
-  client.publish("/LCDB/canon/detonateur", etat_z);
+  client.publish("/LCDB/canon/detonateur", etat_z);//chanel sur laquelle la carte publish
   Serial.print("etat:");
   Serial.println(0, 1);
 }
 
+int etat = 0;
+int etatb = 1;
+char etat_m[10];
 
-float etat = 0;
-float etatb = 1;
 void loop()
 {
-  etat=0;
-  etatb = digitalRead(button);
-  delay(300);
+    if(etat==1)
+  {
+    delay(5000);
+    etat=0;
+    sprintf(etat_m, "%d", etat);
 
-  while (etatb != 1)
+    client.publish("/LCDB/canon/detonateur", etat_m);//chanel sur laquelle la carte publish
+    Serial.print("etat:");
+    Serial.println(etat, 1);
+  }
+  etatb = digitalRead(button);
+  compteur=0;
+
+  while (etatb != 1&&compteur<3)
   {
     compteur= compteur +1;
     delay(100);
     etatb = digitalRead(button);
   }
 
-  if (compteur >= 2) {
+  if (compteur >= 3) {
     Serial.println ("lancement de la séquence de tir !!");
     etat=1;
   }
-   delay (500);
-
-   if (!etatb == 0)
-   {
-     compteur =0;
-   }
+   delay (300);
 
  client.loop();
 
@@ -93,24 +90,11 @@ void loop()
     connect();
   }
 
-   char etat_m[10];
-
-  // if (millis() - lastMillis > 100) {
-  //   lastMillis = millis();
-    
-    
-  //   sprintf(etat_m,"%f",etat);
-
-  //   client.publish("/LCDB/canon/detonateur", etat_m);
-  //   Serial.print("etat:");
-  //   Serial.println(etat, 1);
-  
-  // } 
   if(etat==1)
   {
-    sprintf(etat_m, "%f", etat);
+    sprintf(etat_m, "%d", etat);
 
-    client.publish("/LCDB/canon/detonateur", etat_m);
+    client.publish("/LCDB/canon/detonateur", etat_m);//chanel sur laquelle la carte publish
     Serial.print("etat:");
     Serial.println(etat, 1);
   }
