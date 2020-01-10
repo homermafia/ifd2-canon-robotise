@@ -22,7 +22,7 @@ void connect() {
   }
 
   Serial.println("connecting...");
-  while (!client.connect("toto", "try", "try")) {
+  while (!client.connect("detonateur", "try", "try")) {
     Serial.print("+");
     delay(1000);
   }
@@ -58,44 +58,44 @@ char etat_m[10];
 
 void loop()
 {
-    if(etat==1)
-  {
-    delay(5000);
-    etat=0;
-    sprintf(etat_m, "%d", etat);
-
-    client.publish("/LCDB/canon/detonateur", etat_m);//chanel sur laquelle la carte publish
-    Serial.print("etat:");
-    Serial.println(etat, 1);
-  }
-  etatb = digitalRead(button);
-  compteur=0;
-
-  while (etatb != 1&&compteur<3)
-  {
-    compteur= compteur +1;
-    delay(100);
-    etatb = digitalRead(button);
-  }
-
-  if (compteur >= 3) {
-    Serial.println ("lancement de la séquence de tir !!");
-    etat=1;
-  }
-   delay (300);
-
- client.loop();
+  client.loop();
 
   if (!client.connected()) {
     connect();
   }
 
+  etatb = digitalRead(button);
+
+  if (etatb != 1 && etat != 1)
+  {
+    compteur = compteur +1;
+    if (compteur >= 25) {
+      lastMillis = millis();
+      etat=1;
+      sprintf(etat_m, "%d", etat);
+
+      client.publish("/LCDB/canon/detonateur", etat_m);//chanel sur laquelle la carte publish
+      Serial.print("etat:");
+      Serial.println(etat, 1);
+
+      Serial.println ("lancement de la sequence de tir !!");
+    }
+  }
+  else {
+    compteur = 0;
+  }
+
   if(etat==1)
   {
-    sprintf(etat_m, "%d", etat);
+    if (millis() - lastMillis > 5000)
+    {
+        lastMillis = 0;
+        etat=0;
+        sprintf(etat_m, "%d", etat);
 
-    client.publish("/LCDB/canon/detonateur", etat_m);//chanel sur laquelle la carte publish
-    Serial.print("etat:");
-    Serial.println(etat, 1);
+        client.publish("/LCDB/canon/detonateur", etat_m);//chanel sur laquelle la carte publish
+        Serial.print("etat:");
+        Serial.println(etat, 1);
+    }
   }
 }
