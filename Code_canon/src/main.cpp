@@ -9,7 +9,8 @@ WiFiClient wificlient;
 const char ssid[] = "Crunch LAB";
 const char pass[] = "90xV@FsT";
 char hostname[14] = "192.168.1.15";//MQTT Broker IP
-int signal=0;
+int prev_phase=0;
+int phase = 0;
 
 unsigned long lastMillis = 0;
 
@@ -50,15 +51,18 @@ void messageReceived(String &topic, String &payload) {
   Serial.println(" - ");
   Serial.println(payload);
   if (payload == "1"){
-    signal=1;
+    if (phase == 0) {
+      phase = 1;
+      prev_phase = 0;
+      lastMillis = millis();
+    }
   }
 }
-
 
 void setup()
 {
   AFMS.begin();  // create with the default frequency 1.6KHz
- AFMS.begin(1000);  // OR with a different frequency, say 1KHz
+  AFMS.begin(1000);  // OR with a different frequency, say 1KHz
   
   // Set the speed to start, from 0 (off) to 255 (max speed)
   Motor1->setSpeed(150);
@@ -88,89 +92,198 @@ void loop()
 {
   client.loop();
 
-  if (!client.connected()) {
-  connect();
+  if (phase == 0){ // canon au repos
+    if (!client.connected()) {
+      connect();
+    }
+  }
+  else {
+    // début séquence
+
+    switch (phase) {
+      case 1: { // acceleration avant
+        if (phase != prev_phase) {
+          Motor1->run(FORWARD);
+          prev_phase = 1;
+        }
+        if (millis() - lastMillis > 5100) {
+          Motor1->setSpeed(255);
+          phase = 2;
+        }
+        else {
+          Motor1->setSpeed((millis() - lastMillis)*255/5100);
+        }
+      }
+      break;
+      case 2: { // vitesse constante avant
+        if (millis() - lastMillis > 7000) {
+          phase = 3;
+        }
+        else {
+          prev_phase = 2;
+        }
+      }
+      break;
+      case 3: { // deceleration
+        if (millis() - lastMillis > 5100) {
+          Motor1->setSpeed(0);
+          phase = 4;
+        }
+        else {
+          Motor1->setSpeed(255 - (millis() - lastMillis)*255/5100);
+          prev_phase = 3;
+        }
+      }
+      break;
+      case 4: { // lever canon
+        if (phase != prev_phase) {
+          Motor2->run(FORWARD);
+          Motor2->setSpeed(255);
+          prev_phase = 4;
+        }
+        if (millis() - lastMillis > 16000) {
+          Motor2->setSpeed(0);
+          phase = 5;
+        }
+      }
+      break;
+      case 5: { // attendre 2 secondes
+        if (millis() - lastMillis > 2000) {
+          phase = 6;
+        }
+        else {
+          prev_phase = 5;
+        }
+      }
+      break;
+      case 6: { // descendre canon
+        if (phase != prev_phase) {
+          Motor2->run(BACKWARD);
+          Motor2->setSpeed(200);
+          prev_phase = 6;
+        }
+        if (millis() - lastMillis > 4000) {
+          Motor2->setSpeed(0);
+          phase = 7;
+        }
+      }
+      break;
+      case 7: { // attendre 2 secondes
+        if (millis() - lastMillis > 2000) {
+          phase = 8;
+        }
+        else {
+          prev_phase = 7;
+        }
+      }
+      break;
+      case 8: { // lever canon
+          if (phase != prev_phase) {
+            Motor2->run(FORWARD);
+            Motor2->setSpeed(200);
+            prev_phase = 8;
+          }
+          if (millis() - lastMillis > 8000) {
+            Motor2->setSpeed(0);
+            phase = 9;
+          }
+      }
+      break;
+      case 9: { // attendre 2 secondes
+        if (millis() - lastMillis > 2000) {
+          phase = 10;
+        }
+        else {
+          prev_phase = 9;
+        }
+      }
+      break;
+      case 10: { // tir du canon (recul du canon)
+        if (phase != prev_phase) {
+          Motor1->run(BACKWARD);
+          // jouer le son de tir ici
+          prev_phase = 10;
+        }
+        if (millis() - lastMillis > 2000) {
+          Motor1->setSpeed(0);
+          phase = 11;
+        }
+        else {
+          Motor1->setSpeed(255 - (millis() - lastMillis)*255/2000);
+        }
+      }
+      break;
+      case 11: { // jouer son explosion après 5 secondes
+        if (millis() - lastMillis > 5000) {
+          // jouer le son d'explosion ici
+          phase = 12;
+        }
+        else {
+          prev_phase = 11;
+        }
+      }
+      break;
+      case 12: { // attendre 5 secondes
+        if (millis() - lastMillis > 5000) {
+          phase = 13;
+        }
+        else {
+          prev_phase = 12;
+        }
+      }
+      break;
+      case 13: { // descendre canon (remise à l'horizontale)
+        if (phase != prev_phase) {
+          Motor2->run(BACKWARD);
+          Motor2->setSpeed(255);
+          prev_phase = 13;
+        }
+        if (millis() - lastMillis > 16000) {
+          Motor2->setSpeed(0);
+          phase = 14;
+        }
+      }
+      break;
+      case 14: { // acceleration arrière
+        if (phase != prev_phase) {
+          Motor1->run(BACKWARD);
+          prev_phase = 14;
+        }
+        if (millis() - lastMillis > 5100) {
+          Motor1->setSpeed(255);
+          phase = 15;
+        }
+        else {
+          Motor1->setSpeed((millis() - lastMillis)*255/5100);
+        }
+      }
+      break;
+      case 15: { // vitesse constante arrière
+        if (millis() - lastMillis > 15000) {
+          phase = 16;
+        }
+        else {
+          prev_phase = 15;
+        }
+      }
+      break;
+      case 16: { // vérification des coordonés rentré en jouer le son victoire ou defaite
+        if (phase != prev_phase) {
+          // vérifier les coordonnés et jouer le son ici
+          Motor1->setSpeed(0);
+          prev_phase = 16;
+        }
+        if (millis() - lastMillis > 10000) {
+          phase = 0; // fin de la séquence, réinitialisation
+        }
+      }
+      break;
+    }
   }
 
-;
-if (signal == 1){
-                                                                      // début séquence
-  int i=0;
-
-    Motor1->run(FORWARD);
-    for (i=0; i<=255; i++) {
-      Motor1->setSpeed(i);  
-      delay(20); // a voir si modifier
-    }
-
-    delay(7000); // modifier pour le temps de sortie du canon
-
-    for (i=255; i>=0; i--) {
-      Motor1->setSpeed(i);  
-      delay(20);
-    }   
-    Motor1->setSpeed(0);
-    // lancer sequence : lever canon
-
-    Motor2->run(FORWARD);
-    Motor2 ->setSpeed(255);       //monter
-    delay(16000);
-
-    Motor2->setSpeed(0);          //attendre
-    delay(2000);
-
-    Motor2->run(BACKWARD);         //descendre
-    Motor2 ->setSpeed(200);
-    delay(4000);
-
-    Motor2->setSpeed(0);          //attendre
-    delay(2000);
-
-    Motor2->run(FORWARD);        //monter
-    Motor2 ->setSpeed(200);
-    delay(8000);
-
-    Motor2->setSpeed(0);
-    delay(2000);
-
-    // jouer son de tir
-
-
-    Motor1->run(BACKWARD);          // sequence de recul car tir
-      for (i=255; i>=0; i=i-3) {
-        Motor1->setSpeed(i);  
-        delay(20);
-      }
-      Motor1->setSpeed(0);
-      delay(5000);
-
-      // jouer son explosion
-
-      delay(5000);
-      Motor2->run(BACKWARD);          // Remise à l'horizontale
-      Motor2->setSpeed(255);
-      delay(16000);                  // Trouver le temps pour mettre a l'horizontal
-      Motor2->setSpeed(0);
-
-      Motor1->run(BACKWARD);          // rentrer canon
-      for (i=0; i<=255; i++) {
-        Motor1->setSpeed(i);  
-        delay(20);                   // a voir si modifier
-      }
-      delay(15000);
-        Motor1->setSpeed(0);
-
-        // Vérifier coordonnées et jouer le son correspondant (victoire ou défaite)
-
-        delay(20000);
-        
-        signal = 0;
-                                                                      // fin séquence
-}
-else {
- Serial.println("En attente de déclenchement");
-}
-delay(1000);
+  if (phase != prev_phase) {
+    lastMillis = millis();
+  }
 }
 
 
